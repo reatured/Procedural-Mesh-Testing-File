@@ -19,27 +19,19 @@ public class ControlMeshVerts : MonoBehaviour
 
         needle.GetComponent<RopeDragger>().onDrag += updateVertPos;
     }
-
-    // Update is called once per frame
-    void Update()
+    public void initate()
     {
-        
+        transform.position = pdvert.position;
+        index = pdvert.index;
+        this.transform.parent = null; 
     }
 
     public void updateVertPos()
     {
-
-        print(pdvert.position);
-        pdvert.position = transform.localPosition;
+        pdvert.position = transform.position;
         meshManager.updateMesh(pdvert);
         
     }
 
-    public void initate()
-    {
-        print(pdvert.index);
-        print(pdvert.position);
-        transform.localPosition = pdvert.position;
-        index = pdvert.index; 
-    }
+    
 }

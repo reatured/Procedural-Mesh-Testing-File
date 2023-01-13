@@ -37,7 +37,7 @@ public class RopeDragger : MonoBehaviour
             //print("Collided");
             if (onAttachingRope != null) onAttachingRope(other.transform);
 
-            //other.enabled = false;
+            other.enabled = false;
         }
     }
 }

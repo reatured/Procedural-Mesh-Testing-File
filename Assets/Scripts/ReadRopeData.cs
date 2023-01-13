@@ -16,17 +16,18 @@ public class ReadRopeData : MonoBehaviour
     public bool AttachingToHole = true; 
     public ObiRopeCursor cursor;
 
-    public GameObject ropeHead, ropeTail;
-    public List<Transform> pointsOnRope = new List<Transform>();
-    public float distBase = 0;
+    public float d_lastDist, d_lastSegment, d_lastDist101;
+    public bool d_isTight;
 
-    public List<int> elementSteps = new List<int>() ;
+    public GameObject ropeHead, ropeTail;
 
     [Range(0.8f, 1.4f)]
     public float tightThreshold = 1f;
     public float stitchedThreshold = 2f;
 
-
+    public List<Transform> pointsOnRope = new List<Transform>();
+    public List<int> elementSteps = new List<int>();
+    public List<int> d_elements;
     // Start is called before the first frame update
     void Start()
     {
@@ -41,6 +42,7 @@ public class ReadRopeData : MonoBehaviour
 
         pointsOnRope.Add(ropeTail.transform);
         elementSteps.Add(0);
+        initiateRopePosition();
 
     }
 
@@ -96,8 +98,7 @@ public class ReadRopeData : MonoBehaviour
         }
     }
 
-    public float d_lastDist, d_lastSegment, d_lastDist101;
-    public bool d_isTight; 
+    
     public bool isLastSegmentTight()
     {
         if (elementSteps.Count < 2) return true;
@@ -145,7 +146,7 @@ public class ReadRopeData : MonoBehaviour
     }
     //stage 4
 
-    public List<int> d_elements;
+    
     public void tighteningLastSegment()
     {
         
@@ -186,6 +187,7 @@ public class ReadRopeData : MonoBehaviour
         print("Elongated" + rope.restLength);
     }
     public float stitichingStep = 1f;
+    public float stitichingSpeed = 1f; 
     public void stitching(Transform obj1, Transform obj2)
     {
         print("stitching");
@@ -193,10 +195,10 @@ public class ReadRopeData : MonoBehaviour
 
 
         obj1.LookAt(obj2);
-        //obj2.LookAt(obj1);
+        obj2.LookAt(obj1);
 
-        obj1.Translate(Vector3.forward * stitichingStep);
-        //obj2.Translate(Vector3.forward * stitichingStep);
+        obj1.Translate(Vector3.forward * stitichingStep * stitichingSpeed * Time.deltaTime);
+        obj2.Translate(Vector3.forward * stitichingStep * stitichingSpeed * Time.deltaTime);
     }
 
 
@@ -207,9 +209,7 @@ public class ReadRopeData : MonoBehaviour
     public void attachingRopeToHole(Transform hole)
     {
         //1. move the particle to the hole
-        int secondParticle = rope.elements[0].particle2;
-        rope.solver.positions[secondParticle] = hole.transform.position;
-
+        syncRopePosition(hole.transform, 1);
         //2. instantiate a group and attach the group to the whole
         var group = ScriptableObject.CreateInstance<ObiParticleGroup>();
         group.particleIndices.Add(rope.elements[0].particle2); // index of the particle in the actor
@@ -223,10 +223,65 @@ public class ReadRopeData : MonoBehaviour
 
     public void updatePointsOnRope(Transform hole)
     {
-        float dist = (hole.transform.position - pointsOnRope.Last().position).magnitude;
-        distBase += dist;
-
         pointsOnRope.Add(hole);
         elementSteps.Add(rope.elements.Count - 1);
     }
+
+    public void syncRopePosition(Transform targetTrans, int vertices, bool startFromHead)
+    {
+        //int targetParticle = startFromHead ? rope.elements[vertices].particle1 : rope.elements[rope.elements.Count - 1 - vertices].particle2;
+        int targetParticle;
+        if (startFromHead)
+        {
+             targetParticle = rope.elements[vertices].particle1;
+        }
+        else
+        {
+             targetParticle = rope.elements[rope.elements.Count - 1 - vertices].particle2;
+        }
+
+        rope.solver.positions[targetParticle] = targetTrans.position; 
+
+    }
+
+    public void syncRopePosition(Transform targetTrans, int vertices)
+    {
+        syncRopePosition(targetTrans, vertices, true);
+    }
+
+    public void syncRopePosition(GameObject targetObj, int vertices, bool startFromHead)
+    {
+        syncRopePosition(targetObj.transform, vertices, startFromHead);
+    }
+
+    public void syncRopePosition(GameObject targetObj, int vertices)
+    {
+        syncRopePosition(targetObj.transform, vertices, true);
+    }
+
+    public void initiateRopePosition()
+    {
+        syncRopePosition(ropeHead, 0);
+        var group = ScriptableObject.CreateInstance<ObiParticleGroup>();
+        group.particleIndices.Add(rope.elements[0].particle1); // index of the particle in the actor
+
+        attachment = this.gameObject.AddComponent<ObiParticleAttachment>();
+        attachment.target = ropeHead.transform;
+        attachment.particleGroup = group;
+
+        syncRopePosition(ropeTail, 0, false);
+
+        group = ScriptableObject.CreateInstance<ObiParticleGroup>();
+        group.particleIndices.Add(rope.elements[^1].particle2); // index of the particle in the actor
+
+        attachment = this.gameObject.AddComponent<ObiParticleAttachment>();
+        attachment.target = ropeTail.transform;
+        attachment.particleGroup = group;
+
+        updatePointsOnRope(ropeTail.transform);
+
+        print("position initiated0");
+    }
+
+    
 }

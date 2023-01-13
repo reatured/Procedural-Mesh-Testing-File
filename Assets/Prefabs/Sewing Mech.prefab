@@ -488,17 +488,17 @@ MonoBehaviour:
   elongateRope: 1
   AttachingToHole: 1
   cursor: {fileID: 0}
-  ropeHead: {fileID: 2641318125582289470}
-  ropeTail: {fileID: 2641318125275060115}
-  pointsOnRope: []
-  distBase: 0
-  elementSteps: 
-  tightThreshold: 1
-  stitchedThreshold: 5
   d_lastDist: 0
   d_lastSegment: 0
   d_lastDist101: 0
   d_isTight: 0
+  ropeHead: {fileID: 2641318125582289470}
+  ropeTail: {fileID: 2641318125275060115}
+  distBase: 0
+  tightThreshold: 1
+  stitchedThreshold: 5
+  pointsOnRope: []
+  elementSteps: 
   d_elements: 
   stitichingStep: 1
 --- !u!114 &2641318125832644992
@@ -749,7 +749,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_CursorMu: 0
-  m_SourceMu: 0.549
+  m_SourceMu: 0.9
   direction: 1
 --- !u!1 &3472011264537598793
 GameObject:
